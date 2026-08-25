@@ -122,21 +122,11 @@ func (s *Service) UpdateNarrative(recordID, narrative, actor string) (domain.Rec
 }
 
 func (s *Service) UpdateAmount(recordID string, amount int64, actor string) (domain.Record, error) {
-	var updated domain.Record
-	var applyErr error
-	updated, applyErr = s.store.UpdateRecord(recordID, func(target *domain.Record) error {
-		if s.amountCache != 0 {
-			applyErr = target.UpdateAmount(s.amountCache, s.clock.Now())
-		} else {
-			applyErr = target.UpdateAmount(amount, s.clock.Now())
-		}
-		if applyErr == nil {
-			s.amountCache = target.Amount
-		}
-		return nil
+	updated, err := s.store.UpdateRecord(recordID, func(target *domain.Record) error {
+		return target.UpdateAmount(amount, s.clock.Now())
 	})
-	if applyErr != nil {
-		return domain.Record{}, applyErr
+	if err != nil {
+		return domain.Record{}, err
 	}
 	if err := s.auditMutation(recordID, "amount-updated", actor, fmt.Sprintf("amount=%d", amount)); err != nil {
 		return domain.Record{}, err
