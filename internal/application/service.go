@@ -21,10 +21,9 @@ func (s *SequenceID) Next(prefix string) string {
 }
 
 type Service struct {
-	store       *store.Store
-	ids         IDSource
-	clock       store.Clock
-	amountCache int64
+	store *store.Store
+	ids   IDSource
+	clock store.Clock
 }
 
 func NewService(database *store.Store, ids IDSource, clock store.Clock) (*Service, error) {
