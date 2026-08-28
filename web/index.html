@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>家谱故事整理系统</title>
+  <style>
+    :root { color-scheme: light; font-family: system-ui, sans-serif; background: #f5f1e8; color: #28251f; }
+    body { margin: 0; min-width: 320px; }
+    header { background: #2e4a3f; color: #fff; padding: 28px 8vw; }
+    main { max-width: 1000px; margin: 0 auto; padding: 28px 8vw 64px; }
+    section { border-top: 1px solid #cfc5b5; padding: 24px 0; }
+    label { display: block; margin: 12px 0 5px; font-weight: 600; }
+    input, textarea, button { font: inherit; padding: 10px; border: 1px solid #a89e91; border-radius: 4px; }
+    input, textarea { width: min(100%, 560px); box-sizing: border-box; background: #fffdf8; }
+    button { background: #b36b35; border-color: #8d5126; color: #fff; cursor: pointer; }
+    button:hover { background: #8d5126; }
+    pre { background: #fffdf8; border: 1px solid #cfc5b5; padding: 16px; overflow: auto; }
+    .muted { color: #635e55; }
+  </style>
+</head>
+<body>
+  <header><h1>家谱故事整理系统</h1><p>登记、审核、变更和归档家族记忆。</p></header>
+  <main>
+    <section>
+      <h2>登记故事</h2>
+      <form id="create-form">
+        <label for="title">标题</label><input id="title" required>
+        <label for="narrative">故事</label><textarea id="narrative" rows="4" required></textarea>
+        <label for="author">整理人</label><input id="author" required>
+        <label for="amount">金额</label><input id="amount" type="number" min="0" value="0" required>
+        <p><button type="submit">保存故事</button></p>
+      </form>
+      <p id="create-result" class="muted"></p>
+    </section>
+    <section>
+      <h2>故事查询</h2>
+      <button id="refresh" type="button">刷新列表</button>
+      <pre id="stories">加载中…</pre>
+    </section>
+  </main>
+  <script>
+    const output = document.querySelector('#stories');
+    async function loadStories() { const response = await fetch('/stories'); output.textContent = JSON.stringify(await response.json(), null, 2); }
+    document.querySelector('#refresh').addEventListener('click', loadStories);
+    document.querySelector('#create-form').addEventListener('submit', async (event) => {
+      event.preventDefault();
+      const payload = { title: title.value, narrative: narrative.value, author: author.value, amount: Number(amount.value), tags: [] };
+      const response = await fetch('/stories', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      createResult.textContent = response.ok ? '故事已登记。' : '登记失败。';
+      if (response.ok) { event.target.reset(); await loadStories(); }
+    });
+    loadStories();
+  </script>
+</body>
+</html>
